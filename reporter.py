@@ -8,8 +8,7 @@ LOGGER = logging.getLogger("reporter")
 
 
 def get_workflow_data(repository, run_id, gh_token, splk_host, splk_token):
-    headers = {
-        "Authorization": "token " + gh_token}
+    headers = {"Authorization": "token " + gh_token}
     endpoint = f"https://api.github.com/repos/{repository}/actions/runs/{run_id}/jobs"
     response = requests.get(endpoint, headers=headers)
     splunk = SplunkReporter(splk_host, splk_token)
@@ -19,7 +18,15 @@ def get_workflow_data(repository, run_id, gh_token, splk_host, splk_token):
 
 
 class SplunkReporter:
-    def __init__(self, host, splunk_token, index="main", port=8088, hec_scheme="https", fields=None):
+    def __init__(
+        self,
+        host,
+        splunk_token,
+        index="main",
+        port=8088,
+        hec_scheme="https",
+        fields=None,
+    ):
         self.host = host
         self.port = port
         self.hec_scheme = hec_scheme
@@ -40,7 +47,7 @@ class SplunkReporter:
             "status": job["status"],
             "conclusion": job["conclusion"],
             "branch": job["head_branch"],
-            "commit": job["head_sha"]
+            "commit": job["head_sha"],
         }
         fields.update(self.user_fields)
         event = {
@@ -76,7 +83,7 @@ class SplunkReporter:
             LOGGER.warning(f"Exception error caught during ingestion: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     github_token = os.getenv("GITHUB_TOKEN")
     splunk_host = os.getenv("SPLUNK_HOST")
     splunk_token = os.getenv("SPLUNK_TOKEN")
