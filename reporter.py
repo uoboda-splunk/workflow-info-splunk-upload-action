@@ -22,36 +22,26 @@ class SplunkReporter:
         index,
         port,
         hec_scheme,
-        fields=None,
     ):
         self.host = host
         self.port = port
         self.hec_scheme = hec_scheme
         self.token = splunk_token
         self.index = index
-        if not fields:
-            self.user_fields = []
-        else:
-            self.user_fields = fields
 
     def send_job_report(self, job, user):
         _id = job["id"]
         _run_id = job["run_id"]
-        fields = {
-            "job_id": _id,
-            "run_id": _run_id,
-            "name": job["name"],
-            "status": job["status"],
-            "conclusion": job["conclusion"],
-            "branch": job["head_branch"],
-            "commit": job["head_sha"],
-            "user": user
-        }
-        fields.update(self.user_fields)
+        fields = {"user": user}
+        fields.update(job)
+        steps = []
+        for step in job["steps"]:
+            steps.append(step["name"])
+        fields["steps"] = steps
         event = {
             "index": self.index,
             "event": f"Job {job['name']} finished with {job['conclusion']} conclusion. Started at {job['started_at']}."
-                     f" Trigerred by {user}",
+            f" Trigerred by {user}",
             "source": "github-workflows",
             "sourcetype": "github:workflow:action",
             "host": job["runner_name"],
@@ -85,8 +75,21 @@ class SplunkReporter:
 if __name__ == "__main__":
     github_token = os.getenv("GITHUB_TOKEN")
 
-    _, repository, run_id, user, splunk_host, splunk_token, index, splunk_port, hec_scheme = sys.argv
-    spl_reporter = SplunkReporter(splunk_host, splunk_token, index, splunk_port, hec_scheme)
+    (
+        _,
+        repository,
+        run_id,
+        user,
+        splunk_host,
+        splunk_token,
+        index,
+        splunk_port,
+        hec_scheme,
+    ) = sys.argv
+    spl_reporter = SplunkReporter(
+        splunk_host, splunk_token, index, splunk_port, hec_scheme
+    )
     data = get_workflow_data(repository, run_id, github_token)
     for job in data["jobs"]:
-        spl_reporter.send_job_report(job, user)
+        if job["conclusion"] is not None:
+            spl_reporter.send_job_report(job, user)
