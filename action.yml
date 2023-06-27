@@ -1,24 +1,23 @@
-# action.yml
 name: "Splunk Workflow Information"
 description: "Action to pass information about GH workflow jobs results"
 inputs:
   repository:
-    description: "github repository name"
+    description: "GitHub repository name to gather data from"
     required: true
   run_id:
-    description: "run id to fetch data"
+    description: "Workflow run id to fetch data from"
     required: true
   user:
-    description: "user which triggered workflow"
+    description: "User which triggered workflow"
     required: true
   splunk_host:
     description: "Splunk host address"
     required: true
   splunk_token:
-    description: "Splunk token used to send data through HEC"
+    description: "Splunk HEC token"
     required: true
   index:
-    description: "Splunk index in which data will be saved"
+    description: "Splunk index in which data will be stored"
     default: "main"
     required: false
   splunk_port:

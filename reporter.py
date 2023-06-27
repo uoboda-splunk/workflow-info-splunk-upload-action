@@ -4,6 +4,8 @@ import os
 import sys
 import requests
 
+from datetime import datetime
+
 LOGGER = logging.getLogger("reporter")
 
 
@@ -38,6 +40,10 @@ class SplunkReporter:
         for step in job["steps"]:
             steps.append(step["name"])
         fields["steps"] = steps
+        format = "%Y-%m-%dT%H:%M:%SZ"
+        start = datetime.strptime(job["started_at"], format)
+        end = datetime.strptime(job["completed_at"], format)
+        fields["duration_in_seconds"] = (end - start).total_seconds()
         event = {
             "index": self.index,
             "event": f"Job {job['name']} finished with {job['conclusion']} conclusion. Started at {job['started_at']}."
