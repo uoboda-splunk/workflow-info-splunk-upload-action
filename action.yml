@@ -19,7 +19,6 @@ inputs:
     description: "protocol which will be used while sending data through HEC - http/https"
     default: "https"
     required: false
-
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "docker://ghcr.io/uoboda-splunk/workflow-info-splunk-upload-action/workflow-info-splunk-upload-action:v1.0.0"
