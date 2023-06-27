@@ -29,7 +29,7 @@ class SplunkReporter:
         self.hec_scheme = hec_scheme
         self.token = splunk_token
         self.index = index
-        if fields is None:
+        if not fields:
             self.user_fields = []
         else:
             self.user_fields = fields

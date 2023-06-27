@@ -28,6 +28,7 @@ inputs:
     required: false
   fields:
     description: "Additional fields which will be added to every event"
+    default: ""
     required: false
 
 runs:
