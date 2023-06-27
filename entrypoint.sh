@@ -1,1 +1,8 @@
-python3 /reporter.py $INPUT_REPOSITORY $INPUT_RUN_ID
+python3 /reporter.py $INPUT_REPOSITORY \
+                     $INPUT_RUN_ID \
+                     $INPUT_SPLUNK_HOST \
+                     $INPUT_SPLUNK_TOKEN \
+                     $INPUT_INDEX \
+                     $INPUT_SPLUNK_PORT \
+                     $INPUT_SPLUNK_HEC_SCHEME \
+                     $INPUT_FIELDS

@@ -7,14 +7,11 @@ import requests
 LOGGER = logging.getLogger("reporter")
 
 
-def get_workflow_data(repository, run_id, gh_token, splk_host, splk_token):
+def get_workflow_data(repository, run_id, gh_token):
     headers = {"Authorization": "token " + gh_token}
     endpoint = f"https://api.github.com/repos/{repository}/actions/runs/{run_id}/jobs"
     response = requests.get(endpoint, headers=headers)
-    splunk = SplunkReporter(splk_host, splk_token)
-    data = response.json()
-    for job in data["jobs"]:
-        splunk.send_job_report(job)
+    return response.json()
 
 
 class SplunkReporter:
@@ -22,9 +19,9 @@ class SplunkReporter:
         self,
         host,
         splunk_token,
-        index="main",
-        port=8088,
-        hec_scheme="https",
+        index,
+        port,
+        hec_scheme,
         fields=None,
     ):
         self.host = host
@@ -85,8 +82,9 @@ class SplunkReporter:
 
 if __name__ == "__main__":
     github_token = os.getenv("GITHUB_TOKEN")
-    splunk_host = os.getenv("SPLUNK_HOST")
-    splunk_token = os.getenv("SPLUNK_TOKEN")
 
-    _, repository, run_id = sys.argv
-    get_workflow_data(repository, run_id, github_token, splunk_host, splunk_token)
+    _, repository, run_id, splunk_host, splunk_token, index, splunk_port, hec_scheme, fields = sys.argv
+    spl_reporter = SplunkReporter(splunk_host, splunk_token, index, splunk_port, hec_scheme, fields)
+    data = get_workflow_data(repository, run_id, github_token)
+    for job in data["jobs"]:
+        spl_reporter.send_job_report(job)

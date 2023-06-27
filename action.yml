@@ -8,6 +8,27 @@ inputs:
   run_id:
     description: "run id to fetch data"
     required: true
+  splunk_host:
+    description: "Splunk host address"
+    required: true
+  splunk_token:
+    description: "Splunk token used to send data through HEC"
+    required: true
+  index:
+    description: "Splunk index in which data will be saved"
+    default: "main"
+    required: false
+  splunk_port:
+    description: "Splunk HEC port"
+    default: "8088"
+    required: false
+  splunk_hec_scheme:
+    description: "protocol which will be used while sending data through HEC - http/https"
+    default: "https"
+    required: false
+  fields:
+    description: "Additional fields which will be added to every event"
+    required: false
 
 runs:
   using: "docker"
