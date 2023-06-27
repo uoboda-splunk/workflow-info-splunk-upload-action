@@ -8,6 +8,9 @@ inputs:
   run_id:
     description: "run id to fetch data"
     required: true
+  user:
+    description: "user which triggered workflow"
+    required: true
   splunk_host:
     description: "Splunk host address"
     required: true

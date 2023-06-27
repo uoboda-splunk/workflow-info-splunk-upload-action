@@ -34,7 +34,7 @@ class SplunkReporter:
         else:
             self.user_fields = fields
 
-    def send_job_report(self, job):
+    def send_job_report(self, job, user):
         _id = job["id"]
         _run_id = job["run_id"]
         fields = {
@@ -45,11 +45,13 @@ class SplunkReporter:
             "conclusion": job["conclusion"],
             "branch": job["head_branch"],
             "commit": job["head_sha"],
+            "user": user
         }
         fields.update(self.user_fields)
         event = {
             "index": self.index,
-            "event": f"{_id} {_run_id}",
+            "event": f"Job {job['name']} finished with {job['conclusion']} conclusion. Started at {job['started_at']}."
+                     f" Trigerred by {user}",
             "source": "github-workflows",
             "sourcetype": "github:workflow:action",
             "host": job["runner_name"],
@@ -83,8 +85,8 @@ class SplunkReporter:
 if __name__ == "__main__":
     github_token = os.getenv("GITHUB_TOKEN")
 
-    _, repository, run_id, splunk_host, splunk_token, index, splunk_port, hec_scheme = sys.argv
+    _, repository, run_id, user, splunk_host, splunk_token, index, splunk_port, hec_scheme = sys.argv
     spl_reporter = SplunkReporter(splunk_host, splunk_token, index, splunk_port, hec_scheme)
     data = get_workflow_data(repository, run_id, github_token)
     for job in data["jobs"]:
-        spl_reporter.send_job_report(job)
+        spl_reporter.send_job_report(job, user)
