@@ -4,5 +4,4 @@ python3 /reporter.py $INPUT_REPOSITORY \
                      $INPUT_SPLUNK_TOKEN \
                      $INPUT_INDEX \
                      $INPUT_SPLUNK_PORT \
-                     $INPUT_SPLUNK_HEC_SCHEME \
-                     $INPUT_FIELDS
+                     $INPUT_SPLUNK_HEC_SCHEME

@@ -83,8 +83,8 @@ class SplunkReporter:
 if __name__ == "__main__":
     github_token = os.getenv("GITHUB_TOKEN")
 
-    _, repository, run_id, splunk_host, splunk_token, index, splunk_port, hec_scheme, fields = sys.argv
-    spl_reporter = SplunkReporter(splunk_host, splunk_token, index, splunk_port, hec_scheme, fields)
+    _, repository, run_id, splunk_host, splunk_token, index, splunk_port, hec_scheme = sys.argv
+    spl_reporter = SplunkReporter(splunk_host, splunk_token, index, splunk_port, hec_scheme)
     data = get_workflow_data(repository, run_id, github_token)
     for job in data["jobs"]:
         spl_reporter.send_job_report(job)
