@@ -4,9 +4,6 @@ GitHub action to send information to Splunk about previous jobs in workflow. It 
 ## Inputs
 |  Input Parameter   | Required | Description                                                             |
 |:------------------:|:--------:|-------------------------------------------------------------------------|
-|     repository     |   true   | GitHub repository name to gather data from                              |
-|       run_id       |   true   | Workflow run id to fetch data from                                      |
-|        user        |   true   | User which triggered workflow                                           |
 |    splunk_host     |   true   | Splunk host address                                                     |
 |    splunk_token    |   true   | Splunk HEC token                                                        |
 |       index        |  false   | Splunk index in which data will be stored                               |
@@ -23,9 +20,6 @@ GitHub action to send information to Splunk about previous jobs in workflow. It 
     steps:
       - uses: uoboda-splunk/workflow-info-splunk-upload-action@v1
         with:
-          repository: ${{ github.repository }}
-          run_id: ${{ github.run_id }}
-          user: ${{ github.actor }}
           splunk_host: ${{ secrets.SPLUNK_HOST }}
           splunk_token: ${{ secrets.SPLUNK_TOKEN }}
         env:
