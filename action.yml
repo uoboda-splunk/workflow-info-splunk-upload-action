@@ -1,15 +1,6 @@
 name: "Splunk Workflow Information"
 description: "Action to pass information about GH workflow jobs results"
 inputs:
-  repository:
-    description: "GitHub repository name to gather data from"
-    required: true
-  run_id:
-    description: "Workflow run id to fetch data from"
-    required: true
-  user:
-    description: "User which triggered workflow"
-    required: true
   splunk_host:
     description: "Splunk host address"
     required: true
