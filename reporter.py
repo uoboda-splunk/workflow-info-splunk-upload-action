@@ -138,4 +138,5 @@ if __name__ == "__main__":
     for artifact in artifact_data["artifacts"]:
         spl_reporter.send_artifacts_report(artifact, user, worfklow_report)
     worfklow_report["run_id"] = run_id
+    worfklow_report["user"] = user
     spl_reporter.send_workflow_report(worfklow_report, user, run_id)
