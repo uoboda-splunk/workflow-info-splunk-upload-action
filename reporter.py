@@ -9,9 +9,9 @@ from datetime import datetime
 LOGGER = logging.getLogger("reporter")
 
 
-def get_workflow_data(repository, run_id, gh_token):
+def get_github_data(repository, run_id, gh_token, endpoint):
     headers = {"Authorization": "token " + gh_token}
-    endpoint = f"https://api.github.com/repos/{repository}/actions/runs/{run_id}/jobs"
+    endpoint = endpoint.format(repository=repository, run_id=run_id)
     response = requests.get(endpoint, headers=headers)
     return response.json()
 
@@ -32,24 +32,37 @@ class SplunkReporter:
         self.index = index
 
     def send_job_report(self, job, user):
-        _id = job["id"]
-        _run_id = job["run_id"]
         fields = {"user": user}
         fields.update(job)
         steps = []
         for step in job["steps"]:
             steps.append(step["name"])
         fields["steps"] = steps
-        format = "%Y-%m-%dT%H:%M:%SZ"
-        start = datetime.strptime(job["started_at"], format)
-        end = datetime.strptime(job["completed_at"], format)
+        _format = "%Y-%m-%dT%H:%M:%SZ"
+        start = datetime.strptime(job["started_at"], _format)
+        end = datetime.strptime(job["completed_at"], _format)
         fields["duration_in_seconds"] = (end - start).total_seconds()
         event = {
             "index": self.index,
             "event": f"Job {job['name']} finished with {job['conclusion']} conclusion. Started at {job['started_at']}."
             f" Trigerred by {user}",
             "source": "github-workflows",
-            "sourcetype": "github:workflow:action",
+            "sourcetype": "github:workflow:job",
+            "host": job["runner_name"],
+            "fields": fields,
+        }
+        self.send_and_log_event(event)
+
+    def send_artifacts_report(self, artifact, user):
+        fields = {"user": user, "run_id": artifact["workflow_run"]["id"]}
+        fields.update(artifact)
+        fields.pop("workflow_run")
+        event = {
+            "index": self.index,
+            "event": f"Artifact {fields['name']} uploaded for workflow {fields['run_id']}"
+            f" Trigerred by {user}",
+            "source": "github-workflows",
+            "sourcetype": "github:workflow:artifact",
             "host": job["runner_name"],
             "fields": fields,
         }
@@ -95,7 +108,12 @@ if __name__ == "__main__":
     spl_reporter = SplunkReporter(
         splunk_host, splunk_token, index, splunk_port, hec_scheme
     )
-    data = get_workflow_data(repository, run_id, github_token)
+    workflow_endpoint = "https://api.github.com/repos/{repository}/actions/runs/{run_id}/jobs"
+    data = get_github_data(repository, run_id, github_token, workflow_endpoint)
     for job in data["jobs"]:
         if job["conclusion"] is not None:
             spl_reporter.send_job_report(job, user)
+    artifact_endpoint = "https://api.github.com/repos/{repository}/actions/runs/{run_id}/artifacts"
+    artifact_data = get_github_data(repository, run_id, github_token, artifact_endpoint)
+    for artifact in artifact_data["artifacts"]:
+        spl_reporter.send_artifacts_report(artifact, user)
