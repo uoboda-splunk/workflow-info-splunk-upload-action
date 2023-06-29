@@ -22,4 +22,4 @@ inputs:
 
 runs:
   using: "docker"
-  image: "docker://ghcr.io/uoboda-splunk/workflow-info-splunk-upload-action/workflow-info-splunk-upload-action:v1.0.0"
+  image: "docker://ghcr.io/uoboda-splunk/workflow-info-splunk-upload-action/workflow-info-splunk-upload-action:v1.0.1"
