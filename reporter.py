@@ -31,7 +31,7 @@ class SplunkReporter:
         self.token = splunk_token
         self.index = index
 
-    def send_job_report(self, job, user):
+    def send_job_report(self, job, user, report):
         fields = {"user": user}
         fields.update(job)
         steps = []
@@ -42,6 +42,8 @@ class SplunkReporter:
         start = datetime.strptime(job["started_at"], _format)
         end = datetime.strptime(job["completed_at"], _format)
         fields["duration_in_seconds"] = (end - start).total_seconds()
+        report["jobs"].append(job["name"])
+        report["duration_in_seconds"] += fields["duration_in_seconds"]
         event = {
             "index": self.index,
             "event": f"Job {job['name']} finished with {job['conclusion']} conclusion. Started at {job['started_at']}."
@@ -53,10 +55,11 @@ class SplunkReporter:
         }
         self.send_and_log_event(event)
 
-    def send_artifacts_report(self, artifact, user):
+    def send_artifacts_report(self, artifact, user, report):
         fields = {"user": user, "run_id": artifact["workflow_run"]["id"]}
         fields.update(artifact)
         fields.pop("workflow_run")
+        report["artifacts"].append(artifact["name"])
         event = {
             "index": self.index,
             "event": f"Artifact {fields['name']} uploaded for workflow {fields['run_id']}"
@@ -65,6 +68,18 @@ class SplunkReporter:
             "sourcetype": "github:workflow:artifact",
             "host": job["runner_name"],
             "fields": fields,
+        }
+        self.send_and_log_event(event)
+
+    def send_workflow_report(self, report, user, run_id):
+        event = {
+            "index": self.index,
+            "event": f"Workflow run with ID {run_id} finished with jobs {', '.join(report['jobs'])} and artifacts {', '.join(report['artifacts'])}"
+            f" Trigerred by {user}",
+            "source": "github-workflows",
+            "sourcetype": "github:workflow",
+            "host": job["runner_name"],
+            "fields": report,
         }
         self.send_and_log_event(event)
 
@@ -108,12 +123,19 @@ if __name__ == "__main__":
     spl_reporter = SplunkReporter(
         splunk_host, splunk_token, index, splunk_port, hec_scheme
     )
-    workflow_endpoint = "https://api.github.com/repos/{repository}/actions/runs/{run_id}/jobs"
+    workflow_endpoint = (
+        "https://api.github.com/repos/{repository}/actions/runs/{run_id}/jobs"
+    )
     data = get_github_data(repository, run_id, github_token, workflow_endpoint)
+    worfklow_report = {"jobs": [], "artifacts": [], "duration_in_seconds": 0}
     for job in data["jobs"]:
         if job["conclusion"] is not None:
-            spl_reporter.send_job_report(job, user)
-    artifact_endpoint = "https://api.github.com/repos/{repository}/actions/runs/{run_id}/artifacts"
+            spl_reporter.send_job_report(job, user, worfklow_report)
+    artifact_endpoint = (
+        "https://api.github.com/repos/{repository}/actions/runs/{run_id}/artifacts"
+    )
     artifact_data = get_github_data(repository, run_id, github_token, artifact_endpoint)
     for artifact in artifact_data["artifacts"]:
-        spl_reporter.send_artifacts_report(artifact, user)
+        spl_reporter.send_artifacts_report(artifact, user, worfklow_report)
+    worfklow_report["run_id"] = run_id
+    spl_reporter.send_workflow_report(worfklow_report, user, run_id)
