@@ -53,6 +53,7 @@ class SplunkReporter:
             "host": job["runner_name"],
             "fields": fields,
         }
+        print(f"Event job: {event}")
         self.send_and_log_event(event)
 
     def send_artifacts_report(self, artifact, user, report):
