@@ -18,12 +18,12 @@ def get_github_data(repository, run_id, gh_token, endpoint):
 
 class SplunkReporter:
     def __init__(
-        self,
-        host,
-        splunk_token,
-        index,
-        port,
-        hec_scheme,
+            self,
+            host,
+            splunk_token,
+            index,
+            port,
+            hec_scheme,
     ):
         self.host = host
         self.port = port
@@ -47,7 +47,7 @@ class SplunkReporter:
         event = {
             "index": self.index,
             "event": f"Job {job['name']} finished with {job['conclusion']} conclusion. Started at {job['started_at']}."
-            f" Trigerred by {user}",
+                     f" Trigerred by {user}",
             "source": "github-workflows",
             "sourcetype": "github:workflow:job",
             "host": job["runner_name"],
@@ -64,7 +64,7 @@ class SplunkReporter:
         event = {
             "index": self.index,
             "event": f"Artifact {fields['name']} uploaded for workflow {fields['run_id']}"
-            f" Trigerred by {user}",
+                     f" Trigerred by {user}",
             "source": "github-workflows",
             "sourcetype": "github:workflow:artifact",
             "host": job["runner_name"],
@@ -76,7 +76,7 @@ class SplunkReporter:
         event = {
             "index": self.index,
             "event": f"Workflow run with ID {run_id} finished with jobs {', '.join(report['jobs'])} and artifacts {', '.join(report['artifacts'])}"
-            f" Trigerred by {user}",
+                     f" Trigerred by {user}",
             "source": "github-workflows",
             "sourcetype": "github:workflow",
             "host": job["runner_name"],
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         "https://api.github.com/repos/{repository}/actions/runs/{run_id}/jobs"
     )
     data = get_github_data(repository, run_id, github_token, workflow_endpoint)
-    worfklow_report = {"jobs": [], "artifacts": [], "duration_in_seconds": 0}
+    worfklow_report = {"jobs": [], "duration_in_seconds": 0}
     print(f"Worfklow data {data}")
     for job in data["jobs"]:
         if job["conclusion"] is not None:
@@ -136,10 +136,10 @@ if __name__ == "__main__":
     artifact_endpoint = (
         "https://api.github.com/repos/{repository}/actions/runs/{run_id}/artifacts"
     )
-    artifact_data = get_github_data(repository, run_id, github_token, artifact_endpoint)
-    print(f"Artifacts data {artifact_data}")
-    for artifact in artifact_data["artifacts"]:
-        spl_reporter.send_artifacts_report(artifact, user, worfklow_report)
+    # artifact_data = get_github_data(repository, run_id, github_token, artifact_endpoint)
+    # print(f"Artifacts data {artifact_data}")
+    # for artifact in artifact_data["artifacts"]:
+    #     spl_reporter.send_artifacts_report(artifact, user, worfklow_report)
     worfklow_report["run_id"] = run_id
     worfklow_report["user"] = user
     spl_reporter.send_workflow_report(worfklow_report, user, run_id)
