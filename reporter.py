@@ -128,6 +128,7 @@ if __name__ == "__main__":
     )
     data = get_github_data(repository, run_id, github_token, workflow_endpoint)
     worfklow_report = {"jobs": [], "artifacts": [], "duration_in_seconds": 0}
+    print(f"Worfklow data {data}")
     for job in data["jobs"]:
         if job["conclusion"] is not None:
             spl_reporter.send_job_report(job, user, worfklow_report)
@@ -135,6 +136,7 @@ if __name__ == "__main__":
         "https://api.github.com/repos/{repository}/actions/runs/{run_id}/artifacts"
     )
     artifact_data = get_github_data(repository, run_id, github_token, artifact_endpoint)
+    print(f"Artifacts data {artifact_data}")
     for artifact in artifact_data["artifacts"]:
         spl_reporter.send_artifacts_report(artifact, user, worfklow_report)
     worfklow_report["run_id"] = run_id
