@@ -75,7 +75,7 @@ class SplunkReporter:
     def send_workflow_report(self, report, user, run_id):
         event = {
             "index": self.index,
-            "event": f"Workflow run with ID {run_id} finished with jobs {', '.join(report['jobs'])} and artifacts {', '.join(report['artifacts'])}"
+            "event": f"Workflow run with ID {run_id} finished with jobs {', '.join(report['jobs'])} and artifacts -->deleted<--"
                      f" Trigerred by {user}",
             "source": "github-workflows",
             "sourcetype": "github:workflow",
